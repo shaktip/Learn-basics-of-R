@@ -1,0 +1,513 @@
+#Recommend top 5 movies based on user interest (in the form movie name) (use
+#Cosine Similarity and Euclidean Distance similarity measures).
+
+# clear workspace
+rm(list=ls())
+# Clear Console
+cat("\014")
+
+#Cosine Similarity gives 0 to 1 results, we must sort it to get best 5 matches
+#Sorting is required in descending order so that top 5 can be picked up.
+# minus sign in CR function sorts in descending order.
+
+sort_in_desc <- function(CR,n)
+{
+  CR[rank(-CR[,n]),] <- CR[c(1:nrow(CR)),]
+  return(CR)
+}
+
+# function to trim the special character present in the movie link
+trim <- function (x) gsub("^\\ +|\\ +$", "", x)
+
+# Read the input csv file
+
+mydata <- read.csv("movie_metadata.csv", strip.white=TRUE)
+#Create a copy of dataset
+OriginalFile = mydata
+#remove all column containing text
+mydata$color = NULL
+mydata$director_name = NULL
+mydata$actor_2_name = NULL
+mydata$actor_1_name = NULL
+mydata$actor_3_name = NULL
+mydata$movie_title = NULL
+mydata$plot_keywords  = NULL
+mydata$movie_imdb_link = NULL
+mydata$language = NULL
+mydata$genres= NULL
+mydata$content_rating  = NULL
+mydata$title_year = NULL
+mydata$country = NULL
+
+# Read the user input from command line
+mymovie <- readline(prompt = "Enter your favorite movie link: ")
+
+# Display the user entered value
+#print(paste("You Entered following Movie : ", mymovie))
+
+# Capture user entered movie vector matching with movie link
+GiveMvVector <- subset(OriginalFile, tolower(trim(OriginalFile$movie_imdb_link)) == tolower(mymovie))
+#remove all text columns from it.
+GiveMvVector$color = NULL
+GiveMvVector$director_name = NULL
+GiveMvVector$actor_2_name = NULL
+GiveMvVector$actor_1_name = NULL
+GiveMvVector$actor_3_name = NULL
+GiveMvVector$movie_title = NULL
+GiveMvVector$plot_keywords  = NULL
+GiveMvVector$movie_imdb_link = NULL
+GiveMvVector$language = NULL
+GiveMvVector$genres= NULL
+GiveMvVector$content_rating  = NULL
+GiveMvVector$title_year = NULL
+GiveMvVector$country = NULL
+
+
+
+if (nrow(GiveMvVector) != 1)
+    stop("Error: Multiple or No rows selected from dataset")
+
+#convert the vector into numeric
+View(GiveMvVector)
+GiveMvVector <- as.numeric(GiveMvVector)
+
+
+#Create a CosineResult column with row number, to refer or OriginalFile
+#formula Cosine(x,y) = Sum(xi,yi)/Sum(xi,xi)*Xum(yi,yi)
+CosineResult <- c()
+for (i in 1:nrow(mydata))
+{
+  y <- as.numeric(mydata[i,])
+  myrow <- c(i,crossprod(GiveMvVector,y)/(sqrt(crossprod(GiveMvVector,GiveMvVector))*sqrt(crossprod(y,y))))
+  CosineResult <- rbind(CosineResult,myrow)
+}
+
+View(CosineResult)
+#Sort the result in descending order according to cosine similarity result, i.e. column 2
+CosineResultSorted <- sort_in_desc(CosineResult,2)
+
+View(CosineResultSorted)
+OutPut <- NULL
+#Take out top 5 movies i.e. from row no 2 to 6
+for (i in 2:6)
+{
+  p <- CosineResultSorted[i,1]
+  v <- (OriginalFile[p,12])
+  OutPut <- c(OutPut, paste(v))
+}
+
+print(OutPut)
+
+
+#########################################################################################################################################
+
+
+#Euclidean Distance similarity measures
+
+#Recommend top 5 movies based on user interest (in the form movie name) (use
+#Cosine Similarity and Euclidean Distance similarity measures).
+
+# clear workspace
+rm(list=ls())
+# Clear Console
+cat("\014")
+
+#Euclidian Distance gives 0 to 1 results, we must sort it to get best 5 matches
+#Sorting is required in Ascending order so that top 5 can be picked up.
+
+
+sort_in_asc <- function(ED,n)
+{
+  ED[rank(ED[,n]),] <- ED[c(1:nrow(ED)),]
+  return(ED)
+}
+
+# function to trim the special character present in the movie link
+trim <- function (x) gsub("^\\ +|\\ +$", "", x)
+
+
+#################################################
+normalize <- function(x) {
+  return ((x - min(x)) / (max(x) - min(x))) }
+################################################
+
+
+
+# Read the input csv file
+
+mydata <- read.csv("movie_metadata.csv", strip.white=TRUE)
+
+#Create a copy of dataset
+OriginalFile = mydata
+
+#remove all column containing text
+mydata$color = NULL
+mydata$director_name = NULL
+mydata$actor_2_name = NULL
+mydata$actor_1_name = NULL
+mydata$actor_3_name = NULL
+mydata$movie_title = NULL
+mydata$plot_keywords  = NULL
+#mydata$movie_imdb_link = NULL
+mydata$language = NULL
+mydata$genres= NULL
+mydata$content_rating  = NULL
+mydata$title_year = NULL
+mydata$country = NULL
+
+
+mydata <- na.omit(mydata)
+mydata1 <- mydata
+mydata1 <- as.data.frame(lapply(mydata[1], normalize))
+mydata1 <- cbind(mydata1, as.data.frame(lapply(mydata[2], normalize)))
+mydata1 <- cbind(mydata1, as.data.frame(lapply(mydata[3], normalize)))
+mydata1 <- cbind(mydata1, as.data.frame(lapply(mydata[4], normalize)))
+mydata1 <- cbind(mydata1, as.data.frame(lapply(mydata[5], normalize)))
+mydata1 <- cbind(mydata1, as.data.frame(lapply(mydata[6], normalize)))
+mydata1 <- cbind(mydata1, as.data.frame(lapply(mydata[7], normalize)))
+mydata1 <- cbind(mydata1, as.data.frame(lapply(mydata[8], normalize)))
+mydata1 <- cbind(mydata1, as.data.frame(lapply(mydata[9], normalize)))
+mydata1 <- cbind(mydata1, mydata[10])
+mydata1 <- cbind(mydata1, as.data.frame(lapply(mydata[11], normalize)))
+mydata1 <- cbind(mydata1, as.data.frame(lapply(mydata[12], normalize)))
+mydata1 <- cbind(mydata1, as.data.frame(lapply(mydata[13], normalize)))
+mydata1 <- cbind(mydata1, as.data.frame(lapply(mydata[14], normalize)))
+mydata1 <- cbind(mydata1, as.data.frame(lapply(mydata[15], normalize)))
+mydata1 <- cbind(mydata1, as.data.frame(lapply(mydata[16], normalize)))
+mydata <- mydata1
+
+
+
+# Read the user input from command line
+mymovie <- readline(prompt = "Enter your favorite movie link: ")
+
+# Display the user entered value
+#print(paste("You Entered following Movie : ", mymovie))
+
+# Capture user entered movie vector matching with movie link
+GivenMvVector <- subset(mydata, tolower(trim(mydata$movie_imdb_link)) == tolower(mymovie))
+
+#remove all text columns from it.
+#GivenMvVector$color = NULL
+#GivenMvVector$director_name = NULL
+#GivenMvVector$actor_2_name = NULL
+#GivenMvVector$actor_1_name = NULL
+#GivenMvVector$actor_3_name = NULL
+#GivenMvVector$movie_title = NULL
+#GivenMvVector$plot_keywords  = NULL
+#GivenMvVector$movie_imdb_link = NULL
+#GivenMvVector$language = NULL
+#GivenMvVector$genres= NULL
+#GivenMvVector$content_rating  = NULL
+#GivenMvVector$title_year = NULL
+#GivenMvVector$country = NULL
+
+#mydata$movie_imdb_link = NULL
+mydata$movie_imdb_link = NULL
+GivenMvVector$movie_imdb_link = NULL
+
+
+
+if (nrow(GivenMvVector) != 1)
+  stop("Error: Multiple or No rows selected from dataset")
+
+#convert the vector into numeric
+View(GivenMvVector)
+GivenMvVector <- as.numeric(GivenMvVector)
+
+
+#Create a CosineResult column with row number, to refer or OriginalFile
+#formula Cosine(x,y) = Sum(xi,yi)/Sum(xi,xi)*Xum(yi,yi)
+EuclideanDist <- c()
+for (i in 1:nrow(mydata))
+{
+  y <- as.numeric(mydata[i,])
+  myrow <- c(i, sqrt(sum((GivenMvVector-y)^2)))
+  EuclideanDist <- rbind(EuclideanDist,myrow)
+}
+
+View(EuclideanDist)
+#Sort the result in descending order according to cosine similarity result, i.e. column 2
+EuclideanDistSorted <- sort_in_asc(EuclideanDist,2)
+
+View(EuclideanDistSorted)
+OutPut <- NULL
+#Take out top 5 movies i.e. from row no 2 to 6
+for (i in 2:6)
+{
+  p <- EuclideanDistSorted[i,1]
+  v <- (OriginalFile[p,12])
+  OutPut <- c(OutPut, paste(v))
+}
+
+print(OutPut)
+
+
+
+
+###############################################################################################################################
+#Jaccard Coefficient for Actor Director Duo, To display top 5 Actor Director Pair.
+
+# clear workspace
+rm(list=ls())
+# Clear Console
+cat("\014")
+
+
+
+# function to trim the special character present in the movie title
+trim <- function (x) gsub("^\\ +|\\ +$", "", x)
+
+# Read the input csv file
+mydata <- read.csv("movie_metadata.csv", strip.white=TRUE, stringsAsFactors = FALSE)
+
+
+#Director and Actor1 rows.
+mydata1 <- mydata[mydata$director_name!="" & mydata$actor_1_name !="" , c("director_name","actor_1_name")]
+
+#Director and Actor2 Rows
+mydata2 <- mydata[mydata$director_name!="" & mydata$actor_2_name !="" , c("director_name", "actor_2_name")]
+
+#Director and Actor3 Rows
+mydata3 <- mydata[mydata$director_name!="" & mydata$actor_3_name !="", c("director_name" , "actor_3_name")]
+
+#Rename Columns as DirName and ActName of all above sets
+colnames(mydata1)[1] <- "DirName"
+colnames(mydata1)[2] <- "ActName"
+
+colnames(mydata2)[1] <- "DirName"
+colnames(mydata2)[2] <- "ActName"
+
+colnames(mydata3)[1] <- "DirName"
+colnames(mydata3)[2] <- "ActName"
+
+#Merge all records of above sets
+MD <- mydata1
+MD <- rbind(MD , mydata2)
+MD <- rbind(MD, mydata3)
+MD <- unique(MD)
+
+#unique records of Director and Actor
+View(MD)
+
+#Compute jacardCoeff
+
+JacardCoeff <- c()
+
+
+for( i in 1 : nrow(MD))
+{
+
+  Dmovie <- mydata[mydata$director_name== MD[i,1], c("movie_title")]
+
+  Amovie <- mydata[mydata$actor_1_name==MD[i,2] | mydata$actor_2_name==MD[i,2] | mydata$actor_3_name==MD[i,2] ,  c("movie_title")]
+
+  IntersectionOfActorDir <- intersect(Amovie,Dmovie)
+    
+  if(length(IntersectionOfActorDir) == 0)
+  {
+     JacardCoeff[i] <- 0
+     print(paste(i, " ", JacardCoeff[i]))
+     next
+  }
+    
+ UnionActorDir <- union(Amovie,Dmovie)
+    
+ JacardCoeff[i] <- length(IntersectionOfActorDir)/length(UnionActorDir)
+ print(paste(i, " ", JacardCoeff[i]))
+}
+
+#append the jacardcoeff column to actor director pairs
+MD <- cbind(MD, JacardCoeff)
+#Sort the records in descending order of JacardCoeff
+
+SortedMD <- MD[order(JacardCoeff, decreasing = TRUE),  ]
+#MD <- DescSort(MD, 3)
+View(SortedMD)
+#Top5 records of Sorted records
+Top5 <- head(SortedMD,5)
+#Display the top 5 pairs
+print(Top5[ , c("DirName" ,  "ActName")])
+
+
+######################################################################################################################
+#Divide the file into 2 parts Training and Testing of Data as 70% and 30% respectively
+
+# clear workspace
+rm(list=ls())
+# Clear Console
+cat("\014")
+
+MyData = read.csv("movie_metadata.csv")
+
+TRows = nrow(MyData)
+
+TrainRows = as.integer(TRows*0.7)
+
+#train_data <- head(mydata, n=train_rows)
+#test_data <- tail(mydata, n=(total_rows-train_rows))
+
+TrainData <- MyData[1:TrainRows,]
+TestData <- MyData[(TrainRows+1):TRows ,]
+
+write.csv(TrainData,file="TrainData.csv")
+write.csv(TestData,file="TestData.csv")
+
+
+############################################################################################################################
+   #Linear Regression Model
+
+
+# clear workspace
+rm(list=ls())
+# Clear Console
+cat("\014")
+
+#TrainData and TestData from TrainData and TestData
+TrainData = read.csv("TrainData.csv")
+TestData = read.csv("TestData.csv")
+
+#OriginalIMDBScore from TestData
+OriginalIMDBScoreOfTestData <- TestData$imdb_score
+
+
+TestData$imdb_score <- NULL
+
+formula <- imdb_score ~ num_critic_for_reviews + duration + director_facebook_likes + actor_3_facebook_likes + actor_1_facebook_likes + 
+   actor_2_facebook_likes + gross + num_voted_users + cast_total_facebook_likes + facenumber_in_poster + num_user_for_reviews + 
+   budget + movie_facebook_likes
+   
+LinearRegressionModel <- lm(formula = formula, data=TrainData, na.action = na.omit)
+summary(LinearRegressionModel)
+
+#PredictedIMDBScore from LinearRegressionModel
+
+PredictedIMDBScoreofTestData <- predict(LinearRegressionModel, newdata=TestData, type="response")
+
+
+#to plot the points of Orignal against Predicted values
+plot(OriginalIMDBScoreOfTestData, PredictedIMDBScoreofTestData, col="black")
+#par is to use the same graph for 
+#par(new=TRUE)
+#x <- c(0.1:10.0,step=.000001)
+#plot(x,x,col="red",type = "l")
+
+IntegerOriginalValues <- ceiling(OriginalIMDBScoreOfTestData)
+IntegerPredictedValues <- ceiling(PredictedIMDBScoreofTestData)
+table(IntegerOriginalValues,IntegerPredictedValues)
+
+RMSE <- na.omit((OriginalIMDBScoreOfTestData - PredictedIMDBScoreofTestData ) ^ 2)
+RMSE <- sqrt(sum(RMSE) / length(RMSE))
+print(paste("Predicted RMSE is " , RMSE))
+
+
+
+
+######################################################################################################################################
+
+ #KNN
+
+# clear workspace
+rm(list=ls())
+# Clear Console
+cat("\014")
+
+library(gmodels)
+library(SnowballC)
+
+
+###########################################################
+
+normalize <- function(x) {
+  return ((x - min(x)) / (max(x) - min(x))) }
+
+###########################################################
+
+
+
+
+
+# read original data
+MyData <- read.csv("movie_metadata.csv",stringsAsFactors = FALSE)
+
+# create new data with numeric columns only
+TempData <- MyData
+
+#Remove all Text column
+TempData$color <- NULL
+TempData$director_name <- NULL
+TempData$actor_2_name <- NULL
+TempData$actor_1_name <- NULL
+TempData$actor_3_name <- NULL
+TempData$movie_title <- NULL
+TempData$plot_keywords <- NULL
+TempData$movie_imdb_link <- NULL
+TempData$language <- NULL
+TempData$country <- NULL
+TempData$content_rating <- NULL
+TempData$title_year <- NULL
+
+TempData <- na.omit(TempData)
+TempData1 <- TempData
+TempData1 <- as.data.frame(lapply(TempData[1:6], normalize))
+TempData1 <- cbind(TempData1, TempData[7])        #7th column is genre column, which does not require normalization.
+TempData1 <- cbind(TempData1 , as.data.frame(lapply(TempData[8:16], normalize)))
+TempData <- TempData1
+
+
+
+# keep only one genre in genres column
+s1 <- sapply(strsplit(as.character(TempData$genres), split='|', fixed=TRUE), function(x) (x[1]))
+
+#Add that column to TempData$genre
+TempData$genres <- s1
+
+# remove NA
+TempData <- na.omit(TempData)
+
+
+TRows <- nrow(TempData)
+
+#Divide the file into 2 parts, 70% TrainSize and 30% TestSize
+TrainSize <- as.integer(TRows*0.7)
+
+TrainData <- TempData[1:TrainSize,]
+TestData <- TempData[(TrainSize+1):TRows,]
+
+# delete genres column
+TrainData$genres <- NULL
+TestData$genres <- NULL
+
+# Create Labels for both
+TrainLabels <- TempData[1:TrainSize, "genres"]
+TestLabels <- TempData[(TrainSize+1):TRows, "genres"]
+
+#The best accuracy of KNN is when Kvalue is sqrt of TrainDataSize
+KValue <- as.integer(sqrt(nrow(TrainData)))
+
+#Prepare knn model
+KNNModel <- knn(train = TrainData, test = TestData, cl = TrainLabels, k = KValue)
+
+#Prepare CrossTable
+MyTable <- CrossTable(x = TestLabels, y = KNNModel , prop.chisq = FALSE)
+
+# convert cross table to data frame
+CrossTableMapping <- as.data.frame(print(MyTable$t),stringsAsFactors = FALSE)
+#z <- as.table(mytable)
+
+# subset of crosstable having only matching columns
+
+CTOneToOne <- subset(CrossTableMapping, CrossTableMapping[1]==CrossTableMapping[2])
+
+#Find sum of one to one
+OneToOne_sum = sum(CTOneToOne[3])
+#Find total sum
+Total_sum = sum(CrossTableMapping[3])
+#Find Error
+PredictionAccuracy = OneToOne_sum/Total_sum
+
+# print the accuracy
+print(paste("KNN Prediction Accuracy :", PredictionAccuracy))
+##########################################################################################################################
+
+
